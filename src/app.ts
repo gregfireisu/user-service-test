@@ -1,8 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import { connectDB } from './config/database';
 import userRoutes from './routes/userRoutes';
+import webRoutes from './routes/webRoutes';
+import cookieParser from 'cookie-parser';
 
 // Конфигурация
 dotenv.config();
@@ -13,9 +16,15 @@ const PORT = process.env.PORT || 3000;
 // Подключение к БД
 connectDB();
 
+// Настройка EJS
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Логирование запросов
 app.use((req, res, next) => {
@@ -25,52 +34,28 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/users', userRoutes);
+app.use('/', webRoutes);
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  });
-});
-
-// Корневой маршрут
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'User Service API', 
-    version: '1.0.0',
-    endpoints: {
-      register: 'POST /api/users/register',
-      login: 'POST /api/users/login',
-      getUser: 'GET /api/users/:id',
-      getUsers: 'GET /api/users',
-      toggleStatus: 'PATCH /api/users/:id/toggle-status'
-    }
-  });
-});
-
-// Обработка ошибок middleware (должен быть после всех маршрутов)
+// Обработка ошибок
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Error:', error);
-  res.status(500).json({ message: 'Внутренняя ошибка сервера' });
+  res.status(500).render('error', { 
+    message: 'Внутренняя ошибка сервера',
+    title: 'Ошибка сервера'
+  });
 });
+
+app.use(cookieParser());
 
 // Обработка 404 - ДОЛЖЕН БЫТЬ ПОСЛЕДНИМ
 app.use((req: express.Request, res: express.Response) => {
-  res.status(404).json({ 
-    message: 'Маршрут не найден',
-    path: req.path,
-    method: req.method
+  res.status(404).render('error', { 
+    message: 'Страница не найдена',
+    title: '404 - Не найдено'
   });
 });
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
-  console.log(`📋 API Documentation:`);
-  console.log(`   POST   /api/users/register    - Регистрация`);
-  console.log(`   POST   /api/users/login       - Вход`);
-  console.log(`   GET    /api/users/:id         - Получить пользователя`);
-  console.log(`   GET    /api/users/            - Список пользователей (admin)`);
-  console.log(`   PATCH  /api/users/:id/toggle-status - Блокировка`);
+  console.log(`📋 Web interface: http://localhost:${PORT}`);
 });

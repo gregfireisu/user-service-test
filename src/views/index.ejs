@@ -1,0 +1,30 @@
+<%- include('partials/header', { title: title, user: user || null }) %>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <h1 class="display-4 mb-4">Добро пожаловать в User Service</h1>
+        <p class="lead">Управление пользователями с удобным интерфейсом</p>
+        
+        <% if (!user) { %>
+            <div class="mt-5">
+                <a href="/register" class="btn btn-dark btn-lg me-3">
+                    <i class="fas fa-user-plus"></i> Регистрация
+                </a>
+                <a href="/login" class="btn btn-outline-dark btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Вход
+                </a>
+            </div>
+        <% } else { %>
+            <div class="mt-5">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> Вы авторизованы как <%= user.role %>
+                </div>
+                <a href="/users" class="btn btn-primary btn-lg">
+                    <i class="fas fa-users"></i> Управление пользователями
+                </a>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

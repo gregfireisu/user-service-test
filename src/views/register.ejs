@@ -1,0 +1,105 @@
+<%- include('partials/header', { title: title, user: null }) %>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Регистрация</h4>
+            </div>
+            <div class="card-body">
+                <% if (error) { %>
+                    <div class="alert alert-danger"><%= error %></div>
+                <% } %>
+                <% if (success) { %>
+                    <div class="alert alert-success"><%= success %></div>
+                <% } %>
+
+                <form id="registerForm" action="/api/users/register" method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Имя *</label>
+                                <input type="text" class="form-control" name="firstName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Фамилия *</label>
+                                <input type="text" class="form-control" name="lastName" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Отчество</label>
+                        <input type="text" class="form-control" name="middleName">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Дата рождения *</label>
+                        <input type="date" class="form-control" name="birthDate" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Пароль *</label>
+                        <input type="password" class="form-control" name="password" required minlength="6">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Роль</label>
+                        <select class="form-select" name="role">
+                            <option value="user">Пользователь</option>
+                            <option value="admin">Администратор</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-dark w-100">
+                        <i class="fas fa-user-plus"></i> Зарегистрироваться
+                    </button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <p>Уже есть аккаунт? <a href="/login">Войдите</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script>
+// Обработка формы регистрации
+document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    try {
+        const response = await fetch('/api/users/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert('Регистрация успешна! Теперь вы можете войти.');
+            window.location.href = '/login';
+        } else {
+            alert('Ошибка: ' + result.message);
+        }
+    } catch (error) {
+        alert('Ошибка сети: ' + error.message);
+    }
+});
+</script>
+<%- include('partials/footer') %>

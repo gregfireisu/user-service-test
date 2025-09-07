@@ -8,16 +8,20 @@ export interface AuthRequest extends Request {
 
 export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const authHeader = req.header('Authorization');
+    // Пробуем получить токен из заголовка
+    let token = req.header('Authorization')?.replace('Bearer ', '');
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Если нет в заголовке, пробуем из кук
+    if (!token && req.cookies?.token) {
+      token = req.cookies.token;
+    }
+    
+    if (!token) {
       res.status(401).json({ message: 'Токен не предоставлен' });
       return;
     }
 
-    const token = authHeader.replace('Bearer ', '');
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
-    
     const user = await User.findById(decoded.id);
     
     if (!user) {
